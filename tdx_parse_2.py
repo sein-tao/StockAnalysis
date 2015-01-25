@@ -12,7 +12,7 @@ import pandas.io.data as web
 import dateutil.parser
 
 def min_datetime_parse(dt):
-    dnum, tnum = dt << 16 >> 16, dt>>16  #small endian
+    tnum, dnum = dt>>16, dt << 16 >> 16  #little endian
     (ym, res) = divmod(dnum, 2048)
     y = ym + 2004
     (m, d) = divmod(res, 100)
