@@ -29,21 +29,22 @@ def get_market(account):
 header = ['Name', 'Date', 'Time', 'BS', 'Price', 'Volume', 'Amount',
           'TradeNo','OrderNo', 'Code', 'Account']
 RawRecord = collections.namedtuple('RawRecord', header)
-def parse_record(line):
-    cols = (x.strip("=\"") for x in line.encode(codec).rstrip().split("\t"))
-    raw = RawRecord(*cols)
-    date = datetime.strptime(raw.Date + raw.Time, datefmt+timefmt)
-    BS = bs_state.get(raw.BS, raw.BS)
-    code = security.Security(raw.Code, raw.Name, get_market(raw.Account))
-    record = trades.TradeRecord(code,BS,float(raw.Price), int(raw.Volume), date)
-    return record
 
+def _toRecord(self):
+    date = datetime.strptime(self.Date + self.Time, datefmt+timefmt)
+    BS = bs_state.get(self.BS, self.BS)
+    code = security.Security(self.Code, self.Name, get_market(self.Account))
+    return trades.TradeRecord(code,BS,float(self.Price), int(self.Volume), date)
+
+RawRecord.toRecord = _toRecord
 
 def parse_file(path):
     f = io.open(path, 'r',encoding=file_encode)
     f.readline() # header line
-    records = (parse_record(line) for line in f.readlines())
-    return records
+    for line in f.readlines():
+        cols = (x.strip("=\"") for x in line.encode(codec).rstrip().split("\t"))
+        yield RawRecord(*cols).toRecord()
+
 
 if __name__ == '__main__':
     path = "D:\\Personal\\Finnance\\Stock\\wt.xls"
