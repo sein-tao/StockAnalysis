@@ -28,7 +28,7 @@ class TradeRecord:
         self.fee = self.estFee() if self.est_fee else fee
         self.other_cost = other_cost
 
-        self.cap =  self.volume * self.price
+        self.cap =  self.vol_delta * self.price
         self.cost = self.cap + self.fee + self.other_cost
 
     def estFee(self):
@@ -43,8 +43,8 @@ class TradeRecord:
             return 0
 
     def __str__(self):
-        return "%s %s: %s%d@%.3f,Fee%.2f,Cost%.2f" % (self.date, self.code,
-                    self.direct, self.volume, self.price, self.fee, self.cost)
+        return "%s %s: %s%d@%.3f" % (self.date, self.code,
+                    self.direct, self.volume, self.price)
 
 
 

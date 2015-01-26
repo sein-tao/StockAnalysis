@@ -12,6 +12,7 @@ import numpy as np
 from datetime import datetime
 import security
 import trades
+import collections
 #import sys
 #reload(sys)
 #sys.setdefaultencoding('utf8')
@@ -27,14 +28,14 @@ def get_market(account):
 #证券名称,成交日期,成交时间,买卖标志,成交价格,成交数量,成交金额,成交编号,委托编号,证券代码,股东代码
 header = ['Name', 'Date', 'Time', 'BS', 'Price', 'Volume', 'Amount',
           'TradeNo','OrderNo', 'Code', 'Account']
-
+RawRecord = collections.namedtuple('RawRecord', header)
 def parse_record(line):
     cols = (x.strip("=\"") for x in line.encode(codec).rstrip().split("\t"))
-    elts = dict(zip(header, cols))
-    date = datetime.strptime(elts['Date'] + elts['Time'], datefmt+timefmt)
-    BS = bs_state.get(elts['BS'], elts['BS'])
-    code = security.Security(elts['Code'], elts['Name'], get_market(elts['Account']))
-    record = trades.TradeRecord(code,BS,float(elts['Price']), int(elts['Volume']), date)
+    raw = RawRecord(*cols)
+    date = datetime.strptime(raw.Date + raw.Time, datefmt+timefmt)
+    BS = bs_state.get(raw.BS, raw.BS)
+    code = security.Security(raw.Code, raw.Name, get_market(raw.Account))
+    record = trades.TradeRecord(code,BS,float(raw.Price), int(raw.Volume), date)
     return record
 
 
