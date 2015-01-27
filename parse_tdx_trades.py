@@ -23,23 +23,23 @@ codec = 'utf8'
 
 #证券名称,成交日期,成交时间,买卖标志,成交价格,成交数量,成交金额,
 #成交编号,委托编号,证券代码,股东代码
-_TdxRecordHeader = ['Name', 'Date', 'Time', 'BS', 'Price', 'Volume', 'Amount',
-          'TradeNo','OrderNo', 'Code', 'Account']
+_TdxRecordHeader = ['name', 'date', 'time', 'BS', 'price', 'volume', 'amount',
+          'tradeNo','orderNo', 'code', 'account']
 class TdxRecord (collections.namedtuple('RawRecord', _TdxRecordHeader)):
     _datefmt, _timefmt = "%Y%m%d","%H:%M:%S"
     _bs_state = {u'买入': 'B', u'卖出': 'S'}
 
     def toRecord(self):
-        date = dt.combine(dt.strptime(self.Date,self.__class__._datefmt).date(),
-                dt.strptime(self.Time,self.__class__._timefmt).time())
+        date = dt.combine(dt.strptime(self.date,self.__class__._datefmt).date(),
+                dt.strptime(self.time,self.__class__._timefmt).time())
         BS = self.__class__._bs_state.get(self.BS, self.BS)
-        code = security.Security(self.Code, self.Name, self.get_market())
-        return TradeRecord(date, code, BS, float(self.Price), int(self.Volume))
+        code = security.Security(self.code, self.get_market(), self.name)
+        return TradeRecord(code, date, BS, float(self.price), int(self.volume))
 
     def get_market(self):
-        if self.Account[0] == 'A':
+        if self.account[0] == 'A':
             return 'SS'
-        elif self.Account[0] == '0':
+        elif self.account[0] == '0':
             return 'SZ'
 
 def parse_file(path):

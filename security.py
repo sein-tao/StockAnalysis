@@ -7,7 +7,7 @@ Created on Tue Jan 20 11:48:41 2015
 """
 
 class Security:
-    def __init__(self, code, name=None, market=None):
+    def __init__(self, code, market=None, name=None):
         self.code = code
         self.name = name
         self.market = market
@@ -24,6 +24,9 @@ class Security:
 
     def __str__(self):
         return self.code + "." + self.market + " " + self.name
+
+    def __eq__(self, other):
+        return self.market == other.market and self.code == other.code
 
 
 

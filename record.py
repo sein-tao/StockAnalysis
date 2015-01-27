@@ -5,31 +5,29 @@ Created on Tue Jan 20 10:23:36 2015
 @author: Sein Tao
 @email: sein.tao@gmail.com
 """
+from collections import namedtuple
 
-class TradeRecord:
-    def __init__(self, date, code, BS, price, volume,
+RecordBase = namedtuple("RecordBase", ["code", "date", "BS", "price", "volume"])
+class TradeRecord(RecordBase):
+    def __init__(self, code, date, BS, price, volume,
                  fee=None, other_cost = 0):
         """ Trade Record init
         :parm code: Security, security for trade
+        :parm date: datetime:datetime, date of trade,
         :parm BS: string, Buy or Sell
         :parm price: float
         :parm volume: int
-        :parm date: datetime:datetime, date of trade,
         :parm fee: float
         :parm other_cost: float
         """
-        self.code = code
-        self.BS = BS
-        self.price = price
-        self.volume = volume
-        self.vol_delta = self.direct() * volume
-        self.date = date
+        super(self.__class__, self).__init__(code, date, BS, price, volume)
+        self.dVol = self.direct() * self.volume
         self.est_fee = fee is None
         self.fee = self.estFee() if self.est_fee else fee
         self.other_cost = other_cost
 
-        self.cap =  self.vol_delta * self.price
-        self.cost = self.cap + self.fee + self.other_cost
+        self.cap =  self.dVol * self.price
+        self.cost = (self.cap + self.fee + self.other_cost) * -1
 
     def estFee(self):
         return 0
@@ -45,11 +43,6 @@ class TradeRecord:
     def __str__(self):
         return "%s %s: %s%d@%.3f" % (self.date, self.code,
                     self.BS, self.volume, self.price)
-
-
-    from_tdx = None
-
-
 
 
 
@@ -71,7 +64,7 @@ class TradeEntry:
     def trade(self, record):
         assert record.code == self.code, "Record code do not match"
         self.records.append(record)
-        self.volume += record.vol_delta
+        self.volume += record.dVol
         self.cost += record.cost
         self.fee += record.fee
         if record.BS == 'B':
@@ -80,6 +73,8 @@ class TradeEntry:
             rest_value = self.buy * self.volume
             self.profit += rest_value - self.cost
             self.cost = rest_value
+        else:
+            raise TypeError("Unable to handle trade type")
 
         if self.volume == 0:
             self.close = record.date.date()
