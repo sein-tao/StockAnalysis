@@ -13,6 +13,7 @@ import numpy as np
 from datetime import datetime as dt
 from collections import namedtuple, defaultdict
 import util
+getter = util.getter
 #portfolio = dict()
 #history = []
 #els = [] # record of not BS entries
@@ -40,12 +41,12 @@ class TabularRecord(namedtuple('Record', TablularHeader)):
 
 
 HistoryHeader = ["code", "start", "end", "trades", "profit", "fee"]
-class TradeHistory(util.NamedTuple("TradeHistory", HistoryHeader)):
+class TradeHistory(namedtuple("TradeHistory", HistoryHeader)):
     @classmethod
     def fromEntry(cls,entry):
         return cls(entry.code, entry.start, entry.end,
                    len(entry.records), entry.profit, entry.fee)
-    #__repr__ = util.tuple_str
+    __repr__ = util.tuple_str
 
 
 
@@ -59,7 +60,7 @@ class Portfolio:
     def add_trades(self, records):
         recList = map(TabularRecord.fromRecord, records)
         #df['flag'] = None
-        recList.sort(key=lambda x:x.date, reverse=True)
+        recList.sort(key=getter('date'), reverse=True)
         #df.start = df.date.min()
         #df.codes = df.code.unique()
         #if df.start > self.last:
