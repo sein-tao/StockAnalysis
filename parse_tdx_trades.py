@@ -43,7 +43,7 @@ class TdxRecord (collections.namedtuple('RawRecord', _TdxRecordHeader)):
             return 'SZ'
 
 def parse_file(path):
-    with io.open(path, 'r') as f:
+    with io.open(path, 'r', encoding=file_encode) as f:
         f.readline() # header line
         for line in f.readlines():
             cols = (x.strip("=\"") for x in line.rstrip().split("\t"))

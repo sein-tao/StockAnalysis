@@ -27,7 +27,7 @@ class TradeRecord(RecordBase):
         self.other_cost = other_cost
 
         self.cap =  self.dVol * self.price
-        self.cost = (self.cap + self.fee + self.other_cost) * -1
+        self.cost = self.cap + self.fee + self.other_cost
 
     def estFee(self):
         return 0
@@ -47,13 +47,14 @@ class TradeRecord(RecordBase):
 
 
 
-class TradeEntry:
+class PfEntry:
+    BS_type = set(('B', 'S'))
     def __init__(self, record):
         if record.BS != 'B':
             raise TypeError("only Buy records can init %s" % self.__class__.__name__)
         self.code = record.code
-        self.init = record.date.date()
-        self.close = None
+        self.start = record.date
+        self.end = None
         self.records = []
         self.profit = 0
         self.volume = 0
@@ -77,17 +78,19 @@ class TradeEntry:
             raise TypeError("Unable to handle trade type")
 
         if self.volume == 0:
-            self.close = record.date.date()
+            self.end = record.date
 
 
     def closed(self):
-        return self.close is not None
+        return self.end is not None
 
     def __str__(self):
         pref = self.__class__.__name__ + ": %s, " % self.code
 
-        rec = "%s TO %s, %d Trades, Earned %.2f, " %  (
-            self.init, self.close, len(self.records), self.profit)
-        pos = "Closed." if self.closed() else \
-                "Current: %d @ %.3f" % (self.volume, self.buy)
+        rec = "%s, %dTrades, %+.2f, " %  (
+            self.start, len(self.records), self.profit)
+        pos = "Closed" if self.closed() else "%d@%.3f" % (self.volume, self.buy)
         return pref + rec + pos
+    def __repr__(self):
+        return self.__str__()
+
