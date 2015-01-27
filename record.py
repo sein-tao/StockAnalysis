@@ -7,11 +7,11 @@ Created on Tue Jan 20 10:23:36 2015
 """
 
 class TradeRecord:
-    def __init__(self, code, BS, price, volume, date,
+    def __init__(self, date, code, BS, price, volume,
                  fee=None, other_cost = 0):
         """ Trade Record init
         :parm code: Security, security for trade
-        :parm BS: string "B" or "S", Buy or Sell
+        :parm BS: string, Buy or Sell
         :parm price: float
         :parm volume: int
         :parm date: datetime:datetime, date of trade,

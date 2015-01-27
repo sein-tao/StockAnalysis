@@ -19,3 +19,8 @@ for record in parse_tdx_trades.parse_file(path):
     else:
         portfolio[record.code].trade(record)
 
+def parse_file(path):
+    data = pd.DataFrame(_parse_file(path), columns = header)
+    return data
+header = ['Code', 'Date', 'BS', 'Price', 'Volume']
+class TabularRecord(collections.namedtuple('TabularRecord', header))
