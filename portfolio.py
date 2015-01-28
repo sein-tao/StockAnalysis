@@ -108,6 +108,8 @@ if __name__ == '__main__':
     path = "D:\\Personal\\Finnance\\Stock\\wt.xls"
     testA = util.test_file("tdxTradeA.xls")
     testB = util.test_file("tdxTradeB.xls")
+    testC = util.test_file("tdxTradeBig.xls")
+
 
     #data = pd.DataFrame(map(TabularRecord.fromRecord, parse_tdx_file(testA)),
     #                columns = TabularRecord._fields)
@@ -116,6 +118,19 @@ if __name__ == '__main__':
     pf = Portfolio()
     pf.add_trades(parse_tdx_file(testA))
     pf.add_trades(parse_tdx_file(testB))
+
+    # performance test
+    month = timedelta(days=31)
+    def shift(rec):
+        l = list(rec)
+        l[1] += month
+        return TradeRecord(*l)
+    def test():
+        pf = Portfolio()
+
+        for i in xrange(100):
+            pf.add_trades(itertools.imap(shift, parse_tdx_file(testC)))
+
 
 
 
