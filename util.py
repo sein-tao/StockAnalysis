@@ -32,10 +32,6 @@ def df(namedtuplelist):
 def getter(attr):
     return lambda self: self.__getattribute__(attr)
 
-# for pd.DataFrame
-def df_addrow(self, row):
-    self.loc[self.shape[0],:] = row
-
 #import collections
 #def NamedTuple(typename, fieldnames, **kargs):
 #    origin = collections.namedtuple(typename, fieldnames)
