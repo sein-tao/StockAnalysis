@@ -7,8 +7,14 @@ Created on Tue Jan 27 20:49:57 2015
 """
 import pandas as pd
 import os.path
+import sys
 pd.set_option('display.encoding', 'utf8')
 workDir = "E:\\home\\StockAnalysis"
+def set_display():
+    """ IPython display settings,
+    Caution: should only call once"""
+    import codecs
+    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 def test_file(base):
     return os.path.join(workDir, "test_data", base)
