@@ -7,14 +7,12 @@ Created on Sun Jan 25 20:23:32 2015
 """
 
 import io
-import pandas as pd
-import numpy as np
 from datetime import datetime as dt
 import security
 from record import TradeRecord
 import collections
 import sys
-pd.set_option('display.encoding', 'utf8')
+
 
 
 file_encode = 'gb2312'

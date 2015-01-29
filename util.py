@@ -32,14 +32,3 @@ def df(namedtuplelist):
 def getter(attr):
     return lambda self: self.__getattribute__(attr)
 
-#import collections
-#def NamedTuple(typename, fieldnames, **kargs):
-#    origin = collections.namedtuple(typename, fieldnames)
-#    def _str(self, sep=" "):
-#        return "%s(%s)" %(self.__class__.__name__, sep.join(map(str, self)))
-#    origin.__repr__ = lambda self: _str(self, sep=kargs.get('strsep', " "))
-#    @staticmethod
-#    def _getter(attr):
-#        return lambda self: self.__getattribute__(attr)
-#    origin.getter = _getter
-#    return origin

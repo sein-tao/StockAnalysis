@@ -8,15 +8,10 @@ Created on Mon Jan 26 10:06:49 2015
 from record import TradeRecord, RecordBase, PfEntry
 import itertools
 from parse_tdx_trades import parse_file as parse_tdx_file
-import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
 from collections import namedtuple, defaultdict
 import util
 getter = util.getter
-#portfolio = dict()
-#history = []
-#els = [] # record of not BS entries
 
 TablularHeader = RecordBase._fields +  ('dVol', 'cost', 'fee')
 class TabularRecord(namedtuple('Record', TablularHeader)):
@@ -138,6 +133,6 @@ if __name__ == '__main__':
             pf.add_trades(itertools.imap(
                 lambda x:shift(x,i), parse_tdx_file(testC)))
             yield pf
-    for i in test(): print i
+    #for i in test(): print i
 
 
