@@ -1,0 +1,38 @@
+diff --git a/portfolio.py b/portfolio.py
+index f0334da..6b97b30 100644
+--- a/portfolio.py
++++ b/portfolio.py
+@@ -103,6 +103,12 @@ class Portfolio:
+                 rec.flag = 'Untreated'
+             self.records.append(rec)
+ 
++    def __repr__(self):
++        return "%s(Records:%d, History:%d, Position:%d)" % (
++            self.__class__.__name__, len(self.records),
++            len(self.history), len(self.position))
++
++
+ 
+ if __name__ == '__main__':
+     path = "D:\\Personal\\Finnance\\Stock\\wt.xls"
+@@ -121,15 +127,16 @@ if __name__ == '__main__':
+ 
+     # performance test
+     month = timedelta(days=31)
+-    def shift(rec):
++    def shift(rec,i):
+         l = list(rec)
+-        l[1] += month
++        l[1] += month* i
+         return TradeRecord(*l)
+     def test():
+         pf = Portfolio()
+-
+         for i in xrange(100):
+-            pf.add_trades(itertools.imap(shift, parse_tdx_file(testC)))
++            pf.add_trades(itertools.imap(
++                lambda x: shift(x,i), parse_tdx_file(testC)))
++            yield pf
+ 
+ 
+ 

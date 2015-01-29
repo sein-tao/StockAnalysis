@@ -10,7 +10,7 @@ import itertools
 from parse_tdx_trades import parse_file as parse_tdx_file
 import pandas as pd
 import numpy as np
-from datetime import datetime as dt
+from datetime import datetime, timedelta
 from collections import namedtuple, defaultdict
 import util
 getter = util.getter
@@ -55,7 +55,7 @@ class Portfolio:
         self.records = []
         self.history = []
         self.position = dict()
-        self.last = dt.min
+        #self.last = dt.min
         None
     def add_trades(self, records):
         recList = map(TabularRecord.fromRecord, records)
@@ -102,6 +102,10 @@ class Portfolio:
             except TypeError:
                 rec.flag = 'Untreated'
             self.records.append(rec)
+    def __repr__(self):
+        return "%s(Records:%d, History:%d, Position:%d)" % (
+            self.__class__.__name__, len(self.records),
+            len(self.history), len(self.position))
 
 
 if __name__ == '__main__':
@@ -119,6 +123,7 @@ if __name__ == '__main__':
     pf.add_trades(parse_tdx_file(testA))
     pf.add_trades(parse_tdx_file(testB))
 
+
     # performance test
     month = timedelta(days=31)
     def shift(rec):
@@ -128,13 +133,8 @@ if __name__ == '__main__':
     def test():
         pf = Portfolio()
 
-        for i in xrange(100):
+        for i in xrange(10):
             pf.add_trades(itertools.imap(shift, parse_tdx_file(testC)))
+            yield pf
 
 
-
-
-
-
-
-#i = itertools.imap(TabularRecord.fromRecord, parse_tdx_file(path))
