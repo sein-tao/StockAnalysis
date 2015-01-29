@@ -38,5 +38,9 @@ def df(namedtuplelist):
 def getter(attr):
     return lambda self: self.__getattribute__(attr)
 
-
+class Enum(set):
+    def __get__(self, name):
+        if name in self:
+            return name
+        raise AttributeError("%s in not in %s" % (name, type(self)))
 

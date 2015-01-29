@@ -6,24 +6,35 @@ Created on Mon Jan 26 10:06:49 2015
 @email: sein.tao@gmail.com
 """
 from record import TradeRecord, RecordBase, PfEntry
-from itertools import imap
+import itertools
 import pandas as pd
 from parse_tdx_trades import parse_file as parse_tdx_file
 from datetime import datetime, timedelta
 from collections import namedtuple, defaultdict
+#from bisect import bisect #not work for __lt__, __cmp__ comparasion
 import util
 getter = util.getter
 
 TablularHeader = RecordBase._fields +  ('dVol', 'cost', 'fee')
 class TabularRecord(namedtuple('Record', TablularHeader)):
     #Memo = namedtuple("Memo", "fee, est_fee, other_cost")
-    def __init__(self,*args):
-        super(self.__class__, self).__init__(*args)
+    flags = (None, "UnRec", "Untreated", "Open", "Closed")
+    def __init__(self, rec, flag = None):
         self.flag = None
-    @classmethod
-    def fromRecord(cls, rec):
+    def __new__(cls, rec, flag = None):
         #memo = cls.Memo(rec.fee, rec.est_fee, rec.other_cost)
-        return cls(*(rec + (rec.dVol, rec.cost, rec.fee)))
+        return super(cls,cls).__new__(*((cls,) + rec + (rec.dVol, rec.cost, rec.fee)))
+
+    @property
+    def flag(self):
+        return getattr(self,'_flag', None)
+    @flag.setter
+    def flag(self, flag):
+        if flag in self.flags:
+            self._flag = flag
+        else:
+            raise ValueError("Unrecognized flag")
+
     @staticmethod
     def selector(code=None, begin=None, end=None):
         return lambda self: \
@@ -31,13 +42,18 @@ class TabularRecord(namedtuple('Record', TablularHeader)):
             (begin is None or self.date >= begin) and \
             (end is None or self.date <= end)
 
+    def __lt__(self, other):
+        if isinstance(other, datetime):
+            return self.date < other
+        else:
+            return self.date < other.date
 
     def __repr__(self):
         return util.tuple_str(self + (self.flag,))
 
 class PfRecords(list):
-    _fileds = ["code", "date", "BS", "price", "volume",
-               'dVol', 'cost', 'fee', 'flag']
+    _fileds = ("code", "date", "BS", "price", "volume",
+               'dVol', 'cost', 'fee', 'flag')
     dtype = TradeRecord
     def _tabluar(self, elt):
         return (elt.code, elt.date, elt.BS, elt.price, elt.volume,
@@ -46,14 +62,16 @@ class PfRecords(list):
         return pd.DataFrame(map(self._tabluar,self), columns=self._fileds)
 
 
-
-
-HistoryHeader = ["code", "start", "end", "trades", "profit", "fee"]
+HistoryHeader = ("code", "start", "end", "trades", "profit", "fee")
 class TradeHistory(namedtuple("TradeHistory", HistoryHeader)):
     def __new__(cls, entry):
         return super(cls, cls).__new__(cls,
             entry.code, entry.start, entry.end,
             entry.tradeNo, entry.profit, entry.fee)
+    # sorted by elt.end
+    def __lt__(self, other):
+        return self.end < other.end
+
     __repr__ = util.tuple_str
 
 class PfHistory(list):
@@ -64,8 +82,8 @@ class PfHistory(list):
         return pd.DataFrame(map(self._tabular,self), columns=self._fields)
 
 class PfPosition(dict):
-    _fields = ['code', 'start', 'price', 'volume',
-                   'cost', 'profit', 'tradeNo', 'fee', 'end']
+    _fields = ('code', 'start', 'price', 'volume',
+                   'cost', 'profit', 'tradeNo', 'fee', 'end')
     dtype = PfEntry
     def _tabular(self,elt):
         return (elt.code, elt.start, elt.price, elt.volume,
@@ -83,21 +101,44 @@ class Portfolio:
         #self.last = dt.min
         None
     def add_trades(self, records):
-        recList = map(TabularRecord.fromRecord, records)
+        recList = map(TabularRecord, records)
         #df['flag'] = None
         recList.sort(key=getter('date'), reverse=True)
-        #df.start = df.date.min()
-        #df.codes = df.code.unique()
-        #if df.start > self.last:
-        while len(recList) > 0:
-            self.trade(recList.pop())
+        if len(self.records) == 0 or \
+            self.records[-1].date < recList[-1].date:
+            while len(recList) > 0:
+                self.trade(recList.pop())
+        else:
+            codes = set(map(getter('code'), recList))
+            start = recList[-1].date
+            recList.extend(self._pop_affected(codes, start))
+            recList.sort(reverse=True)
+            while len(recList) > 0:
+                self.trade(recList.pop())
+            self.history.sort()
+            self.records.sort()
 
-
-#        else:
-#            aff = self.records.date >= df.start and self.records.co
-#        if self.records.shape[0] == 0:
-#            self.records
-#        start = df.date.min()
+    def _pop_affected(self, codes, start):
+        traceLim = start
+        ih = []
+        for i, h in enumerate(self.history):
+            if h.code in codes and h.end >= start:
+                traceLim = min(traceLim, self.history[i].start)
+                ih.append(i)
+        for i, x in enumerate(ih):
+            self.history.pop(x-i)
+        for code in codes:
+            if code in self.position:
+                traceLim = min(traceLim, self.position.pop(code).start)
+        recs = []
+        ir = []
+        for i, r in enumerate(self.records):
+            if r.code in codes and r.date >= traceLim:
+                recs.append(self.records[i])
+                ir.append(i)
+        for i, x in enumerate(ir):
+            self.records.pop(x-i)
+        return recs
 
     def trade(self, rec):
         #sys.stdout.write(rec.__repr__().decode('utf8'))
@@ -143,6 +184,11 @@ if __name__ == '__main__':
     pf.add_trades(parse_tdx_file(testA))
     pf.add_trades(parse_tdx_file(testB))
     print pf
+
+    pf1 = Portfolio()
+    pf1.add_trades(parse_tdx_file(testB))
+    pf1.add_trades(parse_tdx_file(testA))
+    print "Using Insertion:", pf1
 
 
     # performance test
