@@ -6,7 +6,8 @@ Created on Mon Jan 26 10:06:49 2015
 @email: sein.tao@gmail.com
 """
 from record import TradeRecord, RecordBase, PfEntry
-import itertools
+from itertools import imap
+import pandas as pd
 from parse_tdx_trades import parse_file as parse_tdx_file
 from datetime import datetime, timedelta
 from collections import namedtuple, defaultdict
@@ -40,16 +41,26 @@ class TradeHistory(namedtuple("TradeHistory", HistoryHeader)):
     @classmethod
     def fromEntry(cls,entry):
         return cls(entry.code, entry.start, entry.end,
-                   len(entry.records), entry.profit, entry.fee)
+                   entry.tradeNo, entry.profit, entry.fee)
     __repr__ = util.tuple_str
 
+class PfPosition(dict):
+    _fields = ['code', 'start', 'price', 'volume',
+                   'cost', 'profit', 'tradeNo', 'fee', 'end']
+    dtype = PfEntry
+    def _tabular(self,entry):
+        return (entry.code, entry.start, entry.price, entry.volume,
+                entry.cost, entry.profit, entry.tradeNo, entry.fee, entry.end)
+    def todf(self):
+        return pd.DataFrame(map(self._tabular, self.itervalues()),
+                            columns=self._fields)
 
 
 class Portfolio:
     def __init__(self):
         self.records = []
         self.history = []
-        self.position = dict()
+        self.position = PfPosition()
         #self.last = dt.min
         None
     def add_trades(self, records):

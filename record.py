@@ -47,7 +47,7 @@ class TradeRecord(RecordBase):
 
 
 
-class PfEntry:
+class PfEntry(object):
     BS_type = set(('B', 'S'))
     def __init__(self, record):
         if record.BS != 'B':
@@ -69,9 +69,9 @@ class PfEntry:
         self.cost += record.cost
         self.fee += record.fee
         if record.BS == 'B':
-            self.buy = self.cost / self.volume
+            self.price = self.cost / self.volume
         elif record.BS == 'S':
-            rest_value = self.buy * self.volume
+            rest_value = self.price * self.volume
             self.profit += rest_value - self.cost
             self.cost = rest_value
         else:
@@ -84,12 +84,16 @@ class PfEntry:
     def closed(self):
         return self.end is not None
 
+    def __getattr__(self, attr):
+        if attr == 'tradeNo':
+            return len(self.records)
+
     def __str__(self):
         pref = self.__class__.__name__ + ": %s, " % self.code
 
         rec = "%s, %dTrades, %+.2f, " %  (
             self.start, len(self.records), self.profit)
-        pos = "Closed" if self.closed() else "%d@%.3f" % (self.volume, self.buy)
+        pos = "Closed" if self.closed() else "%d@%.3f" % (self.volume, self.price)
         return pref + rec + pos
     def __repr__(self):
         return self.__str__()
