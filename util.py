@@ -38,3 +38,5 @@ def df(namedtuplelist):
 def getter(attr):
     return lambda self: self.__getattribute__(attr)
 
+
+

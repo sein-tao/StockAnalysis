@@ -35,22 +35,41 @@ class TabularRecord(namedtuple('Record', TablularHeader)):
     def __repr__(self):
         return util.tuple_str(self + (self.flag,))
 
+class PfRecords(list):
+    _fileds = ["code", "date", "BS", "price", "volume",
+               'dVol', 'cost', 'fee', 'flag']
+    dtype = TradeRecord
+    def _tabluar(self, elt):
+        return (elt.code, elt.date, elt.BS, elt.price, elt.volume,
+                elt.dVol, elt.cost, elt.fee, getattr(elt, 'flag', None))
+    def todf(self):
+        return pd.DataFrame(map(self._tabluar,self), columns=self._fileds)
+
+
+
 
 HistoryHeader = ["code", "start", "end", "trades", "profit", "fee"]
 class TradeHistory(namedtuple("TradeHistory", HistoryHeader)):
-    @classmethod
-    def fromEntry(cls,entry):
-        return cls(entry.code, entry.start, entry.end,
-                   entry.tradeNo, entry.profit, entry.fee)
+    def __new__(cls, entry):
+        return super(cls, cls).__new__(cls,
+            entry.code, entry.start, entry.end,
+            entry.tradeNo, entry.profit, entry.fee)
     __repr__ = util.tuple_str
+
+class PfHistory(list):
+    _fields = TradeHistory._fields
+    dtype = TradeHistory
+    _tabluar = list
+    def todf(self):
+        return pd.DataFrame(map(self._tabular,self), columns=self._fields)
 
 class PfPosition(dict):
     _fields = ['code', 'start', 'price', 'volume',
                    'cost', 'profit', 'tradeNo', 'fee', 'end']
     dtype = PfEntry
-    def _tabular(self,entry):
-        return (entry.code, entry.start, entry.price, entry.volume,
-                entry.cost, entry.profit, entry.tradeNo, entry.fee, entry.end)
+    def _tabular(self,elt):
+        return (elt.code, elt.start, elt.price, elt.volume,
+                elt.cost, elt.profit, elt.tradeNo, elt.fee, elt.end)
     def todf(self):
         return pd.DataFrame(map(self._tabular, self.itervalues()),
                             columns=self._fields)
@@ -58,8 +77,8 @@ class PfPosition(dict):
 
 class Portfolio:
     def __init__(self):
-        self.records = []
-        self.history = []
+        self.records = PfRecords()
+        self.history = PfHistory()
         self.position = PfPosition()
         #self.last = dt.min
         None
@@ -95,7 +114,7 @@ class Portfolio:
                 rec.flag = 'Untreated'
             self.records.append(rec)
             if entry.closed():
-                self.history.append(TradeHistory.fromEntry(entry))
+                self.history.append(TradeHistory(entry))
                 need_switch = TabularRecord.selector(entry.code, entry.start, entry.end)
                 for i in xrange(len(self.records)):
                     if need_switch(self.records[i]):
@@ -119,11 +138,6 @@ if __name__ == '__main__':
     testA = util.test_file("tdxTradeA.xls")
     testB = util.test_file("tdxTradeB.xls")
     testC = util.test_file("tdxTradeBig.xls")
-
-
-    #data = pd.DataFrame(map(TabularRecord.fromRecord, parse_tdx_file(testA)),
-    #                columns = TabularRecord._fields)
-    #data = map(TabularRecord.fromRecord, parse_tdx_file(testA))[:10]
 
     pf = Portfolio()
     pf.add_trades(parse_tdx_file(testA))

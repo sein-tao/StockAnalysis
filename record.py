@@ -87,6 +87,7 @@ class PfEntry(object):
     def __getattr__(self, attr):
         if attr == 'tradeNo':
             return len(self.records)
+        raise AttributeError("%s object has no attribute '%s'" % (type(self), attr))
 
     def __str__(self):
         pref = self.__class__.__name__ + ": %s, " % self.code
