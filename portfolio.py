@@ -122,19 +122,22 @@ if __name__ == '__main__':
     pf = Portfolio()
     pf.add_trades(parse_tdx_file(testA))
     pf.add_trades(parse_tdx_file(testB))
+    print pf
 
 
     # performance test
     month = timedelta(days=31)
-    def shift(rec):
+    def shift(rec,i ):
         l = list(rec)
-        l[1] += month
+        l[1] += month * i
         return TradeRecord(*l)
     def test():
         pf = Portfolio()
 
         for i in xrange(10):
-            pf.add_trades(itertools.imap(shift, parse_tdx_file(testC)))
+            pf.add_trades(itertools.imap(
+                lambda x:shift(x,i), parse_tdx_file(testC)))
             yield pf
+    for i in test(): print i
 
 

@@ -6,7 +6,7 @@ Created on Tue Jan 20 11:48:41 2015
 @email: sein.tao@gmail.com
 """
 
-class Security:
+class Security(object):
     def __init__(self, code, market=None, name=None):
         self.code = code
         self.name = name
