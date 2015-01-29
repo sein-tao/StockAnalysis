@@ -111,29 +111,31 @@ class Portfolio:
         else:
             codes = set(map(getter('code'), recList))
             start = recList[-1].date
-            recList.extend(self._pop_affected(codes, start))
+            recList.extend(self._pop_affected(recList))
             recList.sort(reverse=True)
             while len(recList) > 0:
                 self.trade(recList.pop())
             self.history.sort()
             self.records.sort()
 
-    def _pop_affected(self, codes, start):
-        traceLim = start
+    def _pop_affected(self, recList):
+        trace = dict()
+        for rec in recList:
+            trace[rec.code] = min(rec.date, trace.get(rec.code, datetime.max))
         ih = []
         for i, h in enumerate(self.history):
-            if h.code in codes and h.end >= start:
-                traceLim = min(traceLim, self.history[i].start)
+            if h.code in trace and h.end >= trace[h.code]:
+                trace[h.code] = min(trace[h.code], self.history[i].start)
                 ih.append(i)
         for i, x in enumerate(ih):
             self.history.pop(x-i)
-        for code in codes:
+        for code in trace:
             if code in self.position:
-                traceLim = min(traceLim, self.position.pop(code).start)
+                trace[code] = min(trace[code], self.position.pop(code).start)
         recs = []
         ir = []
         for i, r in enumerate(self.records):
-            if r.code in codes and r.date >= traceLim:
+            if r.code in trace and r.date >= trace[r.code]:
                 recs.append(self.records[i])
                 ir.append(i)
         for i, x in enumerate(ir):
