@@ -36,7 +36,23 @@ def df(namedtuplelist):
     return pd.DataFrame(namedtuplelist, columns=namedtuplelist[0]._fields)
 
 def getter(attr):
-    return lambda self: self.__getattribute__(attr)
+    return lambda self: getattr(self, attr)
+
+#def getattrs(attrs):
+#    return lambda elt: map(lambda x:getattr(elt, x), attrs)
+
+def todf(self, fields = None):
+    if fields is None:
+        fields = self._fields
+    if isinstance(self, dict):
+        it = self.itervalues()
+    else:
+        it = iter(self)
+    gets = lambda elt:map(lambda x:getattr(elt, x), fields)
+    return pd.DataFrame(map(gets,it), columns=fields)
+
+
+
 
 class Enum(set):
     def __get__(self, name):

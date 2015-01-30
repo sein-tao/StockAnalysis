@@ -5,7 +5,7 @@ Created on Mon Jan 26 10:06:49 2015
 @author: Sein Tao
 @email: sein.tao@gmail.com
 """
-from record import TradeRecord, RecordBase, PfEntry
+from record import TradeRecord, PfEntry
 import itertools
 import pandas as pd
 from parse_tdx_trades import parse_file as parse_tdx_file
@@ -15,15 +15,13 @@ from collections import namedtuple, defaultdict
 import util
 getter = util.getter
 
-TablularHeader = RecordBase._fields +  ('dVol', 'cost', 'fee')
-class TabularRecord(namedtuple('Record', TablularHeader)):
-    #Memo = namedtuple("Memo", "fee, est_fee, other_cost")
+class TabularRecord(TradeRecord):
     flags = (None, "UnRec", "Untreated", "Open", "Closed")
     def __init__(self, rec, flag = None):
-        self.flag = None
-    def __new__(cls, rec, flag = None):
-        #memo = cls.Memo(rec.fee, rec.est_fee, rec.other_cost)
-        return super(cls,cls).__new__(*((cls,) + rec + (rec.dVol, rec.cost, rec.fee)))
+        self.record = rec
+        self.flag = flag
+    def __getattr__(self, attr):
+        return getattr(self.record, attr)
 
     @property
     def flag(self):
@@ -52,15 +50,10 @@ class TabularRecord(namedtuple('Record', TablularHeader)):
         return util.tuple_str(self + (self.flag,))
 
 class PfRecords(list):
-    _fileds = ("code", "date", "BS", "price", "volume",
+    _fields = ("code", "date", "BS", "price", "volume",
                'dVol', 'cost', 'fee', 'flag')
-    dtype = TradeRecord
-    def _tabluar(self, elt):
-        return (elt.code, elt.date, elt.BS, elt.price, elt.volume,
-                elt.dVol, elt.cost, elt.fee, getattr(elt, 'flag', None))
-    def todf(self):
-        return pd.DataFrame(map(self._tabluar,self), columns=self._fileds)
-
+    dtype = TabularRecord
+    todf = util.todf
 
 HistoryHeader = ("code", "start", "end", "trades", "profit", "fee")
 class TradeHistory(namedtuple("TradeHistory", HistoryHeader)):
@@ -77,20 +70,13 @@ class TradeHistory(namedtuple("TradeHistory", HistoryHeader)):
 class PfHistory(list):
     _fields = TradeHistory._fields
     dtype = TradeHistory
-    _tabluar = list
-    def todf(self):
-        return pd.DataFrame(map(self._tabular,self), columns=self._fields)
+    todf = util.todf
 
 class PfPosition(dict):
     _fields = ('code', 'start', 'price', 'volume',
                    'cost', 'profit', 'tradeNo', 'fee', 'end')
     dtype = PfEntry
-    def _tabular(self,elt):
-        return (elt.code, elt.start, elt.price, elt.volume,
-                elt.cost, elt.profit, elt.tradeNo, elt.fee, elt.end)
-    def todf(self):
-        return pd.DataFrame(map(self._tabular, self.itervalues()),
-                            columns=self._fields)
+    todf = util.todf
 
 
 class Portfolio:
@@ -109,8 +95,6 @@ class Portfolio:
             while len(recList) > 0:
                 self.trade(recList.pop())
         else:
-            codes = set(map(getter('code'), recList))
-            start = recList[-1].date
             recList.extend(self._pop_affected(recList))
             recList.sort(reverse=True)
             while len(recList) > 0:
@@ -152,13 +136,13 @@ class Portfolio:
             try:
                 entry.trade(rec)
                 rec.flag = 'Open'
-            except TypeError as e:
-                #print e.message
+            except TypeError:
                 rec.flag = 'Untreated'
             self.records.append(rec)
             if entry.closed():
                 self.history.append(TradeHistory(entry))
-                need_switch = TabularRecord.selector(entry.code, entry.start, entry.end)
+                need_switch = TabularRecord.selector(
+                                entry.code, entry.start, entry.end)
                 for i in xrange(len(self.records)):
                     if need_switch(self.records[i]):
                         self.records[i].flag = 'Closed'
@@ -196,16 +180,15 @@ if __name__ == '__main__':
     # performance test
     month = timedelta(days=31)
     def shift(rec,i ):
-        l = list(rec)
-        l[1] += month * i
-        return TradeRecord(*l)
-    def test():
-        pf = Portfolio()
+        rec.date += month * i
+        return rec
 
-        for i in xrange(10):
+    def test(cycle):
+        pf = Portfolio()
+        for i in xrange(cycle):
             pf.add_trades(itertools.imap(
                 lambda x:shift(x,i), parse_tdx_file(testC)))
             yield pf
-    #for i in test(): print i
+    for i in test(5): print i
 
 

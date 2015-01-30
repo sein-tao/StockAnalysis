@@ -7,8 +7,8 @@ Created on Tue Jan 20 10:23:36 2015
 """
 from collections import namedtuple
 
-RecordBase = namedtuple("RecordBase", ["code", "date", "BS", "price", "volume"])
-class TradeRecord(RecordBase):
+#RecordBase = namedtuple("RecordBase", ["code", "date", "BS", "price", "volume"])
+class TradeRecord(object):
     def __init__(self, code, date, BS, price, volume,
                  fee=None, other_cost = 0):
         """ Trade Record init
@@ -20,7 +20,9 @@ class TradeRecord(RecordBase):
         :parm fee: float
         :parm other_cost: float
         """
-        super(self.__class__, self).__init__(code, date, BS, price, volume)
+        self.code = code
+        self.date = date
+        self.BS, self.price, self.volume = (BS, price, volume)
         self.dVol = self.direct() * self.volume
         self.est_fee = fee is None
         self.fee = self.estFee() if self.est_fee else fee
