@@ -9,8 +9,10 @@ Created on Tue Jan 20 11:48:41 2015
 def account2market(account):
     if account.startswith('A'):
         return 'SS'
-    else:
+    elif account.startswith('0'):
         return 'SZ'
+    else:
+        return None
 
 class Security(object):
     def __init__(self, code, market=None, name=None):
@@ -57,11 +59,25 @@ class Security(object):
         return s.strip().replace("."," ").split(" ",2)
 
 if __name__ == '__main__':
-    code, market, name = ["002230", 'SZ', "科大讯飞"]
-    stock = Security(code, market, name)
-    print("str:\t", stock)
-    print("repr:\t", repr(stock))
-    print("equal to code:",  stock == code)
-    print("init from code:", stock == Security(code))
-    print("init from mark:", stock == Security(code + "." + market))
-    print("init from str", stock == Security(str(stock)))
+    import unittest
+    class Test(unittest.TestCase):
+        def test_security(self):
+                code, market, name = ["002230", 'SZ', "科大讯飞"]
+                stock = Security(code, market, name)
+                self.assertEqual(stock.name, "科大讯飞")
+                self.assertEqual(stock, code)
+                self.assertEqual(stock, Security(code))
+                self.assertEqual(stock, Security(".".join((code, market))))
+                self.assertEqual(stock, Security(str(stock)))
+    #unittest.TextTestRunner(verbosity=2).run(unittest.makeSuite(Test))
+
+    unittest.main(verbosity=2, exit=False)
+
+#    code, market, name = ["002230", 'SZ', "科大讯飞"]
+#    stock = Security(code, market, name)
+#    print("str:\t", stock)
+#    print("repr:\t", repr(stock))
+#    print("equal to code:",  stock == code)
+#    print("init from code:", stock == Security(code))
+#    print("init from mark:", stock == Security(code + "." + market))
+#    print("init from str", stock == Security(str(stock)))

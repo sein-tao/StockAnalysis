@@ -30,9 +30,10 @@ def parse_day(path):
     return df
 
 if __name__ == '__main__':
-    path = "C:\\zd_zszq\\vipdoc\\sz\\lday\\sz000001.day"
+    datadir = 'E:\Stock\zd_zszq'
+    path = datadir + "\\vipdoc\\sz\\lday\\sz000001.day"
     df = parse_day(path)
-    print df[:10]
+    print(df[:10])
     
 
 
