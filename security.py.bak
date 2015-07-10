@@ -14,7 +14,7 @@ def account2market(account):
 
 class Security(object):
     def __init__(self, code, market=None, name=None):
-        if not isinstance(code, str): #basestring for str and unicode
+        if not isinstance(code, basestring): #basestring for str and unicode
             raise TypeError("code should be string")
         if self.__class__._like_rep(code):
             self.__init__(*self.__class__._rep_to_arg(code))
@@ -45,7 +45,7 @@ class Security(object):
         return self.__class__.__name__ + "(%s)" % self.__str__()
 
     def __eq__(self, other):
-        if isinstance(other, str):
+        if isinstance(other, basestring):
             other = self.__class__(other)
         return self.market == other.market and self.code == other.code
 
@@ -57,11 +57,11 @@ class Security(object):
         return s.strip().replace("."," ").split(" ",2)
 
 if __name__ == '__main__':
-    code, market, name = ["002230", 'SZ', "科大讯飞"]
+    code, market, name = ["002230", 'SZ', "科大讯飞".decode('utf8')]
     stock = Security(code, market, name)
-    print("str:\t", stock)
-    print("repr:\t", repr(stock))
-    print("equal to code:",  stock == code)
-    print("init from code:", stock == Security(code))
-    print("init from mark:", stock == Security(code + "." + market))
-    print("init from str", stock == Security(str(stock)))
+    print "str:\t", stock
+    print "repr:\t", repr(stock)
+    print "equal to code:",  stock == code
+    print "init from code:", stock == Security(code)
+    print "init from mark:", stock == Security(code + "." + market)
+    print "init from str", stock == Security(str(stock))
