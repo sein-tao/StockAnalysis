@@ -17,13 +17,16 @@ def elt_parser(s):
         return '0'
     else:
         return unquote
-
-class FlowRecord(object):
-    _rawFields = ("Currency", "StockName", "Date", "Price", "Quantity",
+        
+_rawFields = ("Currency", "StockName", "Date", "Price", "Quantity",
     "Amount", "MRest", "TradeID", "TradeName",
     "Fee1", "Fee2", "Fee3", "Fee4", "StockID", "Account")
+RawFlowRecord = namedtuple("RawFlowRecord", _rawFields)
+class FlowRecord:
+
     _fields = ['date', 'security', 'quantity', 'amount', 'fee']
-    Raw = namedtuple("Raw", _rawFields)
+    Raw = RawFlowRecord
+    _rawFields = Raw._fields
     def __init__(self, line):
         elts = map(elt_parser, line.rstrip().split("\t"))
         self.raw = raw = self.Raw(*elts)
@@ -35,7 +38,10 @@ class FlowRecord(object):
         self.amount = float(self.raw.Amount)
 
     def __getattr__(self, attr):
-        return getattr(self.raw, attr)
+        if attr in self._rawFields:
+            return getattr(self.raw, attr)
+        else:
+            raise AttributeError("Unkonwn attribute %s" % attr)
         #self.security = 'sz'
     
     def __str__(self):        
@@ -44,6 +50,11 @@ class FlowRecord(object):
     #def __repr__(self):
     #    return str(list((i, getattr(self, i)) for i in self._fields))
     __repr__ = __str__
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
 
 def parse_tdx_flow(file):
     with open(file) as fh:

@@ -51,11 +51,10 @@ class Security:
     def __eq__(self, other):
         if isinstance(other, str):
             other = self.__class__(other)
-        try:
+        if isinstance(other, self.__class__):
             return self.market == other.market and self.code == other.code
-        except AttributeError:
-            raise TypeError("%s and %s are not comparable" % 
-                tuple(obj.__class__.__name__ for obj in [other, self]))
+        else:
+            return False
 
 
 
@@ -77,20 +76,8 @@ if __name__ == '__main__':
                 self.assertEqual(stock, Security(code))
                 self.assertEqual(stock, Security(".".join((code, market))))
                 self.assertEqual(stock, Security(str(stock)))
-    #unittest.TextTestRunner(verbosity=2).run(unittest.makeSuite(Test))
-#        def test_dzh2security(self):
-#            code, market, name = ["002230", 'SZ', "科大讯飞"]
-#            self.assertEqual(dzh2Security(market+code), Security(code,market, name))
-        
-#        def test_equal(self):
-#            None
-    unittest.main(verbosity=2, exit=False)
+                #self.assertRaises(TypeError,stock.__eq__, 0)
+                self.assertNotEqual(stock, 0)
+    runner = unittest.TextTestRunner(verbosity=2)
+    runner.run(unittest.makeSuite(Test))
 
-#    code, market, name = ["002230", 'SZ', "科大讯飞"]
-#    stock = Security(code, market, name)
-#    print("str:\t", stock)
-#    print("repr:\t", repr(stock))
-#    print("equal to code:",  stock == code)
-#    print("init from code:", stock == Security(code))
-#    print("init from mark:", stock == Security(code + "." + market))
-#    print("init from str", stock == Security(str(stock)))

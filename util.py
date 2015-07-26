@@ -8,6 +8,7 @@ Created on Tue Jan 27 20:49:57 2015
 import pandas as pd
 import os.path
 import sys
+
 #pd.set_option('display.encoding', 'utf8')
 #workDir = "E:\\home\\StockAnalysis"
 def set_display():
@@ -60,3 +61,10 @@ class Enum(set):
             return name
         raise AttributeError("%s in not in %s" % (name, type(self)))
 
+import unittest
+def runTestCase(test):
+    runner = unittest.TextTestRunner(verbosity=2)
+    tests = unittest.TestLoader().loadTestsFromTestCase(test)
+    suite = unittest.TestSuite()
+    suite.addTests(tests)
+    runner.run(suite)
