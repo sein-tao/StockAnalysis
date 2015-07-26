@@ -70,7 +70,7 @@ class Security:
             return False
 
 
-
+    # not used in this version
     @staticmethod
     def _like_rep(s):
         return "." in s

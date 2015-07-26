@@ -7,8 +7,8 @@ Created on Sun Jul 26 18:51:24 2015
 @email: sein.tao@gmail.com
 """
 
-import sys
-sys.path.append("..")
+# import sys
+# sys.path.append("..")
 import os
 import pickle
 import datetime
@@ -45,7 +45,8 @@ def dump2txt(dump_file, out_file):
         oh.write("\n")
     oh.close()
         
-            
+def load_flow(dump_file):
+    return pickle.load(open(dump_file, 'rb'))            
  
         
 if __name__ == '__main__':
@@ -55,12 +56,15 @@ if __name__ == '__main__':
     #dump2txt(data_file, os.path.join(datadir,'2014.txt'))
     import unittest
     class Test(unittest.TestCase):
+        def setUp(self):
+            self.ref = os.path.join(datadir, '2014.pickle')
+            self.tmp = "tmp/flow.pickle"
         def test_dump(self):
             import filecmp
-            data_file = os.path.join(datadir, '2014.pickle')
-            tmp_file = "../tmp/flow.pickle"
-            dump_flow('201405', '201412', tmp_file)
-            self.assertTrue(filecmp.cmp(data_file, tmp_file))  
+            dump_flow('201405', '201412', self.tmp)
+            self.assertTrue(filecmp.cmp(self.ref, self.tmp)) 
+        def test_load(self):
+            self.assertEqual(load_flow(self.ref), load_flow(self.tmp))
     from util import runTestCase
     runTestCase(Test)
 

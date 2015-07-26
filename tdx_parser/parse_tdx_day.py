@@ -30,11 +30,11 @@ def parse_tdx_day(path):
     df = df.drop('NA', 1)
     return df
 
-def get_close_line(sec, basedir=datadir):
+def get_dayline(sec, basedir=datadir):
     path = os.path.join(basedir, "vipdoc", sec.market.lower(), 'lday', 
                         sec.symbol().lower() + ".day")
-    day_line = parse_tdx_day(path)
-    return day_line.Close.resample('B', fill_method='ffill')
+    return parse_tdx_day(path)
+    #return day_line.Close.resample('B', fill_method='ffill')
 
 if __name__ == '__main__':
     import sys
@@ -44,9 +44,9 @@ if __name__ == '__main__':
     path = datadir + "\\vipdoc\\sz\\lday\\sz000001.day"
     df = parse_tdx_day(path)
     print(df[:10])
-    close = get_close_line(Security('sh000001'), datadir)
-    print(close.shape)
-    print(close[-10:-1])
+    day = get_dayline(Security('sh000001'), datadir)
+    print(day.shape)
+    print(day[-10:-1])
 
 
 

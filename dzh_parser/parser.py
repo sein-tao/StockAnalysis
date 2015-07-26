@@ -6,7 +6,7 @@ Created on Sun Jul 26 13:34:49 2015
 """
 import datetime
 from collections import namedtuple, defaultdict
-import dzh
+from dzh_parser.dzh import DzhDividend
 import sys
 sys.path.append("..")
 from security import Security
@@ -17,6 +17,7 @@ import pandas as pd
 class DivRec(namedtuple('DividenedRecBase', 
             ['security', 'date', 'split', 'div', 'purchase', 'purchase_price'])):
     """ split, div, etc are per share, data in datetime.date format"""
+    pass
 
                     
 
@@ -44,7 +45,7 @@ def dzh2DivRec(dzh_rec):
 
 def parse_dzh_div(file):
     result = defaultdict(dict)
-    for line in dzh.DzhDividend(file).read():
+    for line in DzhDividend(file).read():
         for rec in dzh2DivRec(line):
             result[rec.security][rec.date] = rec
     return result
@@ -56,6 +57,9 @@ if __name__ == '__main__':
     for i, rec in parse_dzh_div(file).items():
         print(i)
         pprint(rec)
+        val = next(iter(rec.values()))
+        print(type(val))
+        #print(type(next(rec.values())))
         break
         
     
