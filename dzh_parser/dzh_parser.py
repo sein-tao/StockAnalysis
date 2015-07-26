@@ -55,6 +55,14 @@ def parse_dzh_div(file):
 
         
 if __name__ == '__main__':
+    import unittest
+    class Test(unittest.TestCase):
+        def test_dzh2security(self):
+            code, market, name = ["002230", 'SZ', "科大讯飞"]
+            self.assertEqual(dzh2Security(market+code), Security(code,market, name))
+    # from util import runTestCase
+    # runTestCase(Test)
+
     from pprint import pprint
     file = "../test_data/full.PWR"
     for i, rec in parse_dzh_div(file).items():
