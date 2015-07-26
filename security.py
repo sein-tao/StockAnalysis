@@ -14,7 +14,9 @@ def account2market(account):
     else:
         return None
 
-class Security(object):
+
+    
+class Security:
     def __init__(self, code, market=None, name=None):
         if not isinstance(code, str): #basestring for str and unicode
             raise TypeError("code should be string")
@@ -49,7 +51,13 @@ class Security(object):
     def __eq__(self, other):
         if isinstance(other, str):
             other = self.__class__(other)
-        return self.market == other.market and self.code == other.code
+        try:
+            return self.market == other.market and self.code == other.code
+        except AttributeError:
+            raise TypeError("%s and %s are not comparable" % 
+                tuple(obj.__class__.__name__ for obj in [other, self]))
+
+
 
     @staticmethod
     def _like_rep(s):
@@ -70,7 +78,12 @@ if __name__ == '__main__':
                 self.assertEqual(stock, Security(".".join((code, market))))
                 self.assertEqual(stock, Security(str(stock)))
     #unittest.TextTestRunner(verbosity=2).run(unittest.makeSuite(Test))
-
+#        def test_dzh2security(self):
+#            code, market, name = ["002230", 'SZ', "科大讯飞"]
+#            self.assertEqual(dzh2Security(market+code), Security(code,market, name))
+        
+#        def test_equal(self):
+#            None
     unittest.main(verbosity=2, exit=False)
 
 #    code, market, name = ["002230", 'SZ', "科大讯飞"]

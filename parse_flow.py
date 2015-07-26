@@ -9,7 +9,7 @@ Created on Fri Jul 10 11:00:50 2015
 from collections import namedtuple
 from security import Security, account2market
 import datetime as dt
-import pandas as pd
+
 
 def elt_parser(s):
     unquote = s.strip(u'="')
@@ -19,10 +19,11 @@ def elt_parser(s):
         return unquote
 
 class FlowRecord(object):
-    Columns = ("Currency", "StockName", "Date", "Price", "Quantity",
+    _rawFields = ("Currency", "StockName", "Date", "Price", "Quantity",
     "Amount", "MRest", "TradeID", "TradeName",
     "Fee1", "Fee2", "Fee3", "Fee4", "StockID", "Account")
-    Raw = namedtuple("Raw", Columns)
+    _fields = ['date', 'security', 'quantity', 'amount', 'fee']
+    Raw = namedtuple("Raw", _rawFields)
     def __init__(self, line):
         elts = map(elt_parser, line.rstrip().split("\t"))
         self.raw = raw = self.Raw(*elts)
@@ -37,22 +38,21 @@ class FlowRecord(object):
         return getattr(self.raw, attr)
         #self.security = 'sz'
     
-    def __str__(self):
-        fields = ['date', 'security', 'quantity', 'amount', 'fee']
-        return " ".join(['{}'] * len(fields)).format(
-            *(getattr(self, i) for i in fields ))
+    def __str__(self):        
+        return " ".join(['{}'] * len(self._fields)).format(
+            *(getattr(self, i) for i in self._fields ))
+    #def __repr__(self):
+    #    return str(list((i, getattr(self, i)) for i in self._fields))
+    __repr__ = __str__
 
+def parse_tdx_flow(file):
+    with open(file) as fh:
+        fh.readline()
+        fh.readline()
+        return [FlowRecord(line) for line in fh]
 if __name__ == '__main__':
     f = u'test_data/flow2014066-06.xls'
-    file_encode = 'gb2312'
-    #df = pd.read_table(f, encoding=file_encode)
-    #print(df)
-    #df= df.applymap(elt_parser)
-    for i, line in enumerate(open(f)):
-        if i < 2:
-            continue
-        rec = FlowRecord(line)
-        #print(rec.raw)
-        #print(rec.amount, rec.raw.Amount)
-        print(rec.security)
-        print(rec)
+    import pprint
+    pprint.pprint(parse_tdx_flow(f))
+
+    

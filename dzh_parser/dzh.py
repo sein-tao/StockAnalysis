@@ -336,6 +336,7 @@ class DzhDividend(DzhFetcher):
             raise EOFError
         
         symbol = unpack('16s', rawsymbol)[0].replace(b'\x00', b'')
+        symbol = symbol.decode()
 
         rawdate = self.f.read(4)
 
@@ -406,6 +407,7 @@ if __name__ == '__main__':
         
     file = "../test_data/full.PWR"
     io = DzhDividend(file)
+    
     for data in io.read():
         print(data)
         break

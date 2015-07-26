@@ -8,8 +8,8 @@ Created on Tue Jan 27 20:49:57 2015
 import pandas as pd
 import os.path
 import sys
-pd.set_option('display.encoding', 'utf8')
-workDir = "E:\\home\\StockAnalysis"
+#pd.set_option('display.encoding', 'utf8')
+#workDir = "E:\\home\\StockAnalysis"
 def set_display():
     """ IPython display settings,
     Caution: should only call once"""
@@ -25,9 +25,9 @@ def tuple_str(self, sep=" "):
 import pprint
 pp = pprint.pprint
 
-def pl(l):
-    for i in l:
-        print str(i)
+#def pl(l):
+#    for i in l:
+#        print str(i)
 
 def df(namedtuplelist):
     if not isinstance(namedtuplelist, list):
