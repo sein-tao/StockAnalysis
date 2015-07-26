@@ -86,7 +86,8 @@ class DzhDay(object):
         ----------
         store : hdf5 store
         """
-        self.f = open(filename, 'r')
+        self.f = open(filename, 'rb')
+        market = market.encode()        
         
         try:
             i = 0
@@ -157,7 +158,7 @@ class DzhDay(object):
         ('000001', 4767, [0, 1132, 1135])
         
         """
-        symbol = unpack('10s', self.f.read(10))[0].replace('\x00', '')
+        symbol = unpack('10s', self.f.read(10))[0].replace(b'\x00', b'')
 
         if symbol == '':
             raise EOFError
@@ -205,7 +206,7 @@ class DzhDay(object):
         for i in range(256):
             rawdata = self.f.read(4)
 
-            if rawdata == '':
+            if rawdata == b'':
                 raise EOFError
             
             timestamp = unpack('i', rawdata)[0]
@@ -397,10 +398,14 @@ if __name__ == '__main__':
 
     # path = os.path.join(os.path.realpath(os.path.dirname(__file__)),
     #                     '../../var')
-
-    # filename = os.path.join(path, "/dzh/sh/DAY.DAT")
-    # io = DzhDay()
-    # for symbol, ohlcs in io.read(filename, 'SH') :
+    import os
+    path = "E:\Stock\dzh365"
+    filename = os.path.join(path, "data", "sh", "DAY_2.DAT")
+    ## NOTE: test failed for DAY_2.DAT, possibly in different file format
+    io = DzhDay()
+    for symbol, ohlcs in io.read(filename, 'SH') :
+        #print(ohlcs)
+        None
     #     memfile = StringIO()
     #     np.save(memfile, ohlcs)
     #     client.put('DayHistory', symbol, memfile.getvalue())

@@ -5,14 +5,15 @@ Created on Fri Jan 09 09:35:10 2015
 @author: xuyu
 """
 
+import os
 import pandas as pd
 import numpy as np
 import pandas.io.data as web
 import dateutil.parser
 
+datadir = 'E:\Stock\zd_zszq'
 
-
-def parse_day(path):
+def parse_tdx_day(path):
     #dtype = np.dtype("i4," + 'i4,' * 4 + 'f4,' + 'i4,' + 'i4,')
     columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Amount', 'Volume', 'NA']
     formats = ['i4'] + ['i4'] * 4 + ['f4'] + ['i4'] * 2
@@ -29,12 +30,23 @@ def parse_day(path):
     df = df.drop('NA', 1)
     return df
 
+def get_close_line(sec, basedir=datadir):
+    path = os.path.join(basedir, "vipdoc", sec.market.lower(), 'lday', 
+                        sec.symbol().lower() + ".day")
+    day_line = parse_tdx_day(path)
+    return day_line.Close.resample('B', fill_method='ffill')
+
 if __name__ == '__main__':
+    import sys
+    sys.path.append("..")
+    from security import Security
     datadir = 'E:\Stock\zd_zszq'
     path = datadir + "\\vipdoc\\sz\\lday\\sz000001.day"
-    df = parse_day(path)
+    df = parse_tdx_day(path)
     print(df[:10])
-    
+    close = get_close_line(Security('sh000001'), datadir)
+    print(close.shape)
+    print(close[-10:-1])
 
 
 

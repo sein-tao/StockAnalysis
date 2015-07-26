@@ -13,7 +13,7 @@ import os
 import pickle
 import datetime
 import dateutil.relativedelta
-from parse_flow import parse_tdx_flow
+from parse_flow import parse_tdx_flow, FlowRecord
 
 datadir="D:\Personal\Finnance\Stock\Flow"
 
@@ -34,12 +34,25 @@ def dump_flow(month_start, month_end, outfile, datadir=datadir):
     with open(outfile, 'wb') as fh:
         pickle.dump(recs, fh)
 
+def dump2txt(dump_file, out_file):
+    ih = open(dump_file, 'rb')
+    data = pickle.load(ih)
+    ih.close()
+    oh = open(out_file, 'w') 
+    oh.write("#" + "\t".join(FlowRecord.Raw._fields) + "\n")
+    for rec in data:
+        oh.write("\t".join(rec.raw))
+        oh.write("\n")
+    oh.close()
+        
+            
  
         
 if __name__ == '__main__':
-    #data_file = os.path.join(datadir, '2014.pickle')
+    data_file = os.path.join(datadir, '2014.pickle')
     #dump_flow('201405', '201412', data_file)    
     #data = pickle.load(open(data_file, 'rb'))
+    #dump2txt(data_file, os.path.join(datadir,'2014.txt'))
     import unittest
     class Test(unittest.TestCase):
         def test_dump(self):

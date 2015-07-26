@@ -8,20 +8,29 @@ Created on Tue Jan 20 11:48:41 2015
 
 def account2market(account):
     if account.startswith('A'):
-        return 'SS'
+        return 'SH'
     elif account.startswith('0'):
         return 'SZ'
     else:
         return None
 
-
+# import re
+#def dzh2Security(dzh_id):
+#    market, code = dzh_id[0:2], dzh_id[2:]
+#    if market == 'SH':
+#        market = 'SS'
+#    return Security(code, market)     
     
 class Security:
+
     def __init__(self, code, market=None, name=None):
         if not isinstance(code, str): #basestring for str and unicode
             raise TypeError("code should be string")
-        if self.__class__._like_rep(code):
-            self.__init__(*self.__class__._rep_to_arg(code))
+        code = code.upper()
+        if code.startswith("S") and market is None:
+            self.market = code[0:2]
+            self.code = code[2:]
+            self.name = name
         else:
             self.code = code
             self.market = market
@@ -33,7 +42,7 @@ class Security:
         if self.code[0] in ['0', '1', '3']:
             self.market = 'SZ'
         elif self.code[0] in ['6','7']:
-            self.market = 'SS'
+            self.market = 'SH'
         else:
             self.market = None
 
@@ -43,7 +52,11 @@ class Security:
         return hash(self.code)
 
     def __str__(self):
-        return "%s.%s %s" % (self.code, self.market, self.name)
+        return "%s%s %s" % (self.market, self.code, self.name)
+    
+    def symbol(self):
+        return "%s%s" % (self.market, self.code)
+        
 
     def __repr__(self):
         return self.__class__.__name__ + "(%s)" % self.__str__()
@@ -74,10 +87,13 @@ if __name__ == '__main__':
                 self.assertEqual(stock.name, "科大讯飞")
                 self.assertEqual(stock, code)
                 self.assertEqual(stock, Security(code))
-                self.assertEqual(stock, Security(".".join((code, market))))
-                self.assertEqual(stock, Security(str(stock)))
+                self.assertEqual(stock, Security("".join((market, code))))
+                self.assertEqual(stock, Security(stock.symbol()))
                 #self.assertRaises(TypeError,stock.__eq__, 0)
                 self.assertNotEqual(stock, 0)
+#        def test_dzh2security(self):
+#            code, market, name = ["002230", 'SZ', "科大讯飞"]
+#            self.assertEqual(dzh2Security(market+code), Security(code,market, name))
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(unittest.makeSuite(Test))
 

@@ -5,12 +5,15 @@ Created on Fri Jul 10 15:50:50 2015
 simple portfolio from cash flow
 @author: xuyu
 """
-import datetime as dt
+import datetime
+import os
 from collections import defaultdict
-import security
+from security import Security
 from parse_flow import FlowRecord
+from tdx_parser.parse_tdx_day import parse_tdx_day
 
-cash = security.Security('0')
+
+cash = Security('0', 'SZ')
 class PF(defaultdict):
     # add from flow file
 
@@ -22,7 +25,7 @@ class PF(defaultdict):
         #self.securities = set()
     def append(self, flow):
         assert(flow.date >= self.end)
-        print(flow.security, flow.quantity)
+        # print(flow.security, flow.quantity)
         self[flow.security] += flow.quantity
         if self[flow.security] == 0:
             del self[flow.security]
@@ -35,11 +38,13 @@ class PF(defaultdict):
             if i < 2:
                 continue
             self.append(FlowRecord(line))
-            
+
+                   
 if __name__ == '__main__':
     f = 'test_data/flow2014066-06.xls'
-    f2 = 'test_data/flow        
+    datadir = 'E:\Stock\zd_zszq'
     pf = PF()
     pf.add_from_file(f)
-    print(pf.keys())
+    print(list(zip(pf.keys(),pf.values())))
     #print(pf.end)
+    print(get_close_line())

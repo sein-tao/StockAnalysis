@@ -18,11 +18,7 @@ class DivRec(namedtuple('DividenedRecBase',
             ['security', 'date', 'split', 'div', 'purchase', 'purchase_price'])):
     """ split, div, etc are per share, data in datetime.date format"""
 
-def dzh2Security(dzh_id):
-    market, code = dzh_id[0:2], dzh_id[2:]
-    if market == 'SH':
-        market = 'SS'
-    return Security(code, market)                         
+                    
 
 """
         symbol: 'SZ000001'
@@ -36,7 +32,7 @@ def dzh2DivRec(dzh_rec):
     """convert function"""
 
     stamp2date = datetime.datetime.fromtimestamp
-    sec = dzh2Security(dzh_rec[0])
+    sec = Security(dzh_rec[0])
     return [DivRec(sec,
                      stamp2date(rec[0]).date(),
                      rec[1], rec[4], rec[2], rec[3]
@@ -55,14 +51,6 @@ def parse_dzh_div(file):
 
         
 if __name__ == '__main__':
-    import unittest
-    class Test(unittest.TestCase):
-        def test_dzh2security(self):
-            code, market, name = ["002230", 'SZ', "科大讯飞"]
-            self.assertEqual(dzh2Security(market+code), Security(code,market, name))
-    # from util import runTestCase
-    # runTestCase(Test)
-
     from pprint import pprint
     file = "../test_data/full.PWR"
     for i, rec in parse_dzh_div(file).items():
